@@ -39,6 +39,13 @@ class StatusEnum(enum.Enum):
     online = 'online'
 
 
+class Role(Base):
+    __tablename__ = 'role'
+
+    id = Column('role_id', Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False, unique=True, index=True)
+
+
 class User(Base):
     __tablename__ = 'user'
 
@@ -46,6 +53,7 @@ class User(Base):
     username = Column(String(50), nullable=False, unique=True, index=True)
     balance = Column(Integer, default=None)
     is_active = Column(Boolean, default=True)
+    role_id = Column(Integer, ForeignKey('role.role_id'), nullable=False)
     if gqls_version >= (2, 2, 0):
         status = Column(Enum(StatusEnum), default=StatusEnum.offline)
 
@@ -53,6 +61,11 @@ class User(Base):
     def username_hybrid_property(self):
         return func.lower(self.username)
 
+    role = relationship(
+        'Role',
+        backref=backref('users', lazy=True),
+        uselist=False,
+    )
     memberships = relationship(
         'Membership',
         primaryjoin=id == Membership.user_id,

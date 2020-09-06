@@ -22,6 +22,11 @@ requirements = [
     'SQLAlchemy<2',
 ]
 
+dev_requirements = [
+    'flake8',
+    'black',
+    'isort==4.3.21',
+]
 
 setup(
     name='graphene-sqlalchemy-filter',
@@ -43,5 +48,8 @@ setup(
     keywords='api graphql protocol rest relay graphene',
     packages=find_packages(exclude=['tests']),
     install_requires=requirements,
+    extras_require={
+        'dev': dev_requirements,
+    },
     python_requires='>=3.6'
 )

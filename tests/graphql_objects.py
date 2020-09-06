@@ -11,7 +11,7 @@ from graphene_sqlalchemy_filter import FilterableConnectionField, FilterSet
 from tests import gqls_version
 
 # This module
-from .models import Article, Author, Group, Membership, User
+from .models import Article, Author, Group, Membership, User, Role
 
 
 class BaseFilter(FilterSet):
@@ -35,6 +35,7 @@ USER_FILTER_FIELDS = {
     'balance': ['eq', 'ne', 'gt', 'lt', 'range', 'is_null'],
     'is_active': ['eq', 'ne'],
     'username_hybrid_property': ['eq', 'ne', 'in'],
+    'role': ['eq'],
 }
 
 
@@ -121,14 +122,36 @@ class AuthorFilter(FilterSet):
         }
 
 
+class RoleFilter(FilterSet):
+    class Meta:
+        model = Role
+        fields = {
+            'id': [...],
+            'name': [...],
+        }
+
+
 class MyFilterableConnectionField(FilterableConnectionField):
     filters = {
+        Role: RoleFilter(),
         User: UserFilter(),
         Membership: MembershipFilter(),
         Group: GroupFilter(),
         Article: ArticleFilter(),
         Author: AuthorFilter(),
     }
+
+
+class RoleNode(SQLAlchemyObjectType):
+    class Meta:
+        model = Role
+        interfaces = (Node,)
+        connection_field_factory = MyFilterableConnectionField.factory
+
+
+class RoleConnection(Connection):
+    class Meta:
+        node = RoleNode
 
 
 class UserNode(SQLAlchemyObjectType):
@@ -193,6 +216,7 @@ class ArticleConnection(Connection):
 
 class Query(graphene.ObjectType):
     field = MyFilterableConnectionField(UserConnection)
+    all_roles = MyFilterableConnectionField(RoleConnection)
     all_groups = MyFilterableConnectionField(GroupConnection)
     all_authors = MyFilterableConnectionField(AuthorConnection)
     all_articles = MyFilterableConnectionField(ArticleConnection)

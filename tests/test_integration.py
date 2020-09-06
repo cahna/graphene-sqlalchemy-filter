@@ -6,14 +6,29 @@ from graphene_sqlalchemy_filter.connection_field import (
     graphene_sqlalchemy_version_lt_2_1_2,
 )
 from tests.graphql_objects import schema
-from tests.models import Group, Membership, User
+from tests.models import Group, Membership, User, Role
 from tests.utils import SQLAlchemyQueryCounter
 
 
+def add_roles(session):
+    roles = [
+        Role(name='admin'),
+        Role(name='moderator'),
+    ]
+    session.bulk_save_objects(roles, return_defaults=True)
+    return roles
+
+
 def add_users(session):
+    roles = add_roles(session)
     users = [
-        User(username='user_1', is_active=True, balance=0),
-        User(username='user_2', is_active=True),
+        User(
+            username='user_1',
+            is_active=True,
+            balance=0,
+            role_id=roles[0].id
+        ),
+        User(username='user_2', is_active=True, role_id=roles[1].id),
     ]
     session.bulk_save_objects(users, return_defaults=True)
     return users
